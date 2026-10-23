@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Recomendações de cultivares de café por pixel em Minas Gerais, com consulta offline no campo.">
+  <meta name="theme-color" content="#02890A">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Typica">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" href="icons/Icon-192.png" type="image/png">
+  <link rel="manifest" href="manifest.json">
+  <title>Typica</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #F5F0E8; }
+    #loading { font: 16px system-ui, sans-serif; color: #013A03; position: absolute; inset: 0; display: grid; place-content: center; text-align: center; padding: 24px; }
+    #loading img { width: min(240px, 70vw); margin: 0 auto 28px; }
+    .loading-spinner { box-sizing: border-box; width: 20px; height: 20px; margin: 20px auto 0; border: 2px solid #d5e3cd; border-top-color: #02890A; border-radius: 50%; animation: spin .9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="loading" role="status"><img src="assets/assets/typica_logo_sem_borda.svg" alt="Typica"><span>Abrindo o Typica…</span><span class="loading-spinner" aria-hidden="true"></span></div>
+  <noscript>Habilite o JavaScript no navegador para usar o Typica.</noscript>
+  <script src="region_packages.js"></script>
+  <script src="pwa.js"></script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

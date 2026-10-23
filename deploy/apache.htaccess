@@ -1,0 +1,18 @@
+# Publicar junto do index.html. A API em api/ exige PHP; MariaDB é opcional.
+DirectoryIndex index.html
+
+<IfModule mod_mime.c>
+  AddType application/wasm .wasm
+  AddType application/javascript .js .mjs
+  AddType application/manifest+json .webmanifest
+  AddType application/gzip .gz
+  AddType application/octet-stream .bin
+  RemoveEncoding .bin
+  RemoveEncoding .gz
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "^(index\.html|sw\.js|manifest\.json|flutter_bootstrap\.js|version\.json|pwa-version\.json)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

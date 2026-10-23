@@ -1,0 +1,8 @@
+<FilesMatch "^_">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+  php_flag display_errors Off
+  php_flag zlib.output_compression Off
+</IfModule>

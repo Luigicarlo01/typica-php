@@ -1,0 +1,51 @@
+name: typica_pwa_php
+description: Typica — recomendações de café por pixel, com uso offline no navegador.
+publish_to: 'none'
+version: 0.2.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  archive: ^4.5.2
+  flutter:
+    sdk: flutter
+  package_info_plus: ^8.0.0
+  http: ^1.2.0
+  crypto: ^3.0.7
+  cupertino_icons: ^1.0.8
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  geolocator: ^14.0.2
+  drift: 2.34.0
+  sqlite3: 3.1.7
+  path: ^1.9.0
+  connectivity_plus: ^6.0.5
+  flutter_svg: ^2.0.10
+  web: ^1.1.1
+  pdf: ^3.13.1
+  printing: ^5.15.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/cultivares.json
+    - assets/colors_2026.json
+    - assets/mg.geojson
+    - assets/logo_epamig.svg
+    - assets/typica_logo.svg
+    - assets/typica_logo_sem_borda.svg
+    - assets/logo_ufv.png
+    - assets/logo_ufv.svg
+    - assets/Logo embrapa cafe.png
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
