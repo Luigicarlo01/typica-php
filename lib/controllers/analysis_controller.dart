@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../services/analysis_service.dart';
 import '../services/crop_cycle_service.dart';
 import '../services/cultivar_info_service.dart';
+import '../services/institution_service.dart';
 
 enum ResistanceFilter { todos, resistente, moderadamenteResistente, suscetivel }
 
@@ -54,6 +55,12 @@ class AnalysisController extends ChangeNotifier {
 
   ResistanceFilter _nematoideFilter = ResistanceFilter.todos;
 
+  String? _institutionFilter;
+
+  String? get institutionFilter => _institutionFilter;
+  String get institutionFilterLabel => _institutionFilter ?? 'Todos';
+  List<String> get institutions => InstitutionService().options;
+
   AnalysisController({AnalysisService? analysisService})
     : _analysisService = analysisService ?? AnalysisService() {
     _cycleService.addListener(_onCycleChanged);
@@ -64,6 +71,27 @@ class AnalysisController extends ChangeNotifier {
   ResistanceFilter get nematoideFilter => _nematoideFilter;
 
   CropCycle get selectedCycle => _cycleService.cycle;
+
+  bool get hasActiveFilters =>
+      selectedCycle != CropCycle.todos ||
+      _institutionFilter != null ||
+      _ferrugemFilter != ResistanceFilter.todos ||
+      _nematoideFilter != ResistanceFilter.todos;
+
+  void clearFilters() {
+    if (!hasActiveFilters) return;
+
+    final cycleChanges = selectedCycle != CropCycle.todos;
+    _institutionFilter = null;
+    _ferrugemFilter = ResistanceFilter.todos;
+    _nematoideFilter = ResistanceFilter.todos;
+    selectedGenotype = null;
+
+    // O listener do ciclo já publica a alteração quando o ciclo muda.
+    // Todos os demais valores são atualizados antes dessa notificação.
+    _cycleService.setCycle(CropCycle.todos);
+    if (!cycleChanges) notifyListeners();
+  }
 
   List<String> get winners => _analysisService.winners;
 
@@ -198,6 +226,21 @@ class AnalysisController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setInstitutionFilter(String? value) {
+    if (value == _institutionFilter) return;
+    if (value != null && !institutions.contains(value)) return;
+    _institutionFilter = value;
+    selectedGenotype = null;
+    notifyListeners();
+  }
+
+  bool _matchesInstitution(String cultivar) {
+    if (_institutionFilter == null) return true;
+    final institution = InstitutionService().institutionFor(cultivar);
+    return _institutionFilter ==
+        (institution ?? InstitutionService.unknownLabel);
+  }
+
   // ============================================================
   // CULTIVARES DA CÉLULA
   // ============================================================
@@ -245,6 +288,7 @@ class AnalysisController extends ChangeNotifier {
   // ============================================================
 
   bool _matchesSelectedCycle(CultivarInfo? info) {
+    if (_cycleService.cycle == CropCycle.todos) return true;
     if (info == null || info.maturacao == null) {
       return false;
     }
@@ -252,6 +296,8 @@ class AnalysisController extends ChangeNotifier {
     final maturacao = _normalizeText(info.maturacao!);
 
     switch (_cycleService.cycle) {
+      case CropCycle.todos:
+        return true;
       case CropCycle.curto:
         return maturacao == 'precoce';
 
@@ -375,6 +421,10 @@ class AnalysisController extends ChangeNotifier {
       final nome = nomes[i];
 
       final info = infoService.infoFor(nome);
+
+      if (!_matchesInstitution(nome)) {
+        continue;
+      }
 
       // Ciclo.
       if (!_matchesSelectedCycle(info)) {

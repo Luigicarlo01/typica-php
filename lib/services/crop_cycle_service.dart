@@ -2,12 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 enum CropCycle {
+  todos,
   curto,
   medio,
   longo;
 
   String get label {
     switch (this) {
+      case CropCycle.todos:
+        return 'Todos';
       case CropCycle.curto:
         return 'Curto';
       case CropCycle.medio:
@@ -22,7 +25,7 @@ class CropCycleService extends ChangeNotifier {
   static final CropCycleService _instance = CropCycleService._();
   factory CropCycleService() => _instance;
   CropCycleService._();
-  CropCycle _cycle = CropCycle.medio;
+  CropCycle _cycle = CropCycle.todos;
   CropCycle get cycle => _cycle;
 
   void setCycle(CropCycle novo) {

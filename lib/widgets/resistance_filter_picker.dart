@@ -208,61 +208,64 @@ class _ResistanceDropdown extends StatelessWidget {
           ),
 
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<ResistanceFilter>(
-              value: value,
+            child: Semantics(
+              label: 'Filtrar por $label',
+              child: DropdownButton<ResistanceFilter>(
+                value: value,
 
-              isExpanded: true,
+                isExpanded: true,
 
-              borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14),
 
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
 
-              // ================================================
-              // VALOR EXIBIDO QUANDO FECHADO
-              // ================================================
-              selectedItemBuilder: (context) {
-                return ResistanceFilter.values.map((filtro) {
-                  return Align(
-                    alignment: Alignment.centerLeft,
+                // ================================================
+                // VALOR EXIBIDO QUANDO FECHADO
+                // ================================================
+                selectedItemBuilder: (context) {
+                  return ResistanceFilter.values.map((filtro) {
+                    return Align(
+                      alignment: Alignment.centerLeft,
+
+                      child: Text(
+                        _shortLabel(filtro),
+
+                        maxLines: 1,
+
+                        overflow: TextOverflow.ellipsis,
+
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList();
+                },
+
+                // ================================================
+                // OPÇÕES
+                // ================================================
+                items: ResistanceFilter.values.map((filtro) {
+                  return DropdownMenuItem<ResistanceFilter>(
+                    value: filtro,
 
                     child: Text(
-                      _shortLabel(filtro),
+                      filtro.label,
 
-                      maxLines: 1,
-
-                      overflow: TextOverflow.ellipsis,
-
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: const TextStyle(fontSize: 13),
                     ),
                   );
-                }).toList();
-              },
+                }).toList(),
 
-              // ================================================
-              // OPÇÕES
-              // ================================================
-              items: ResistanceFilter.values.map((filtro) {
-                return DropdownMenuItem<ResistanceFilter>(
-                  value: filtro,
+                onChanged: (novo) {
+                  if (novo == null) {
+                    return;
+                  }
 
-                  child: Text(
-                    filtro.label,
-
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                );
-              }).toList(),
-
-              onChanged: (novo) {
-                if (novo == null) {
-                  return;
-                }
-
-                onChanged(novo);
-              },
+                  onChanged(novo);
+                },
+              ),
             ),
           ),
         ),

@@ -1,7 +1,7 @@
 name: typica_pwa_php
 description: Typica — recomendações de café por pixel, com uso offline no navegador.
 publish_to: 'none'
-version: 0.2.0+1
+version: 0.2.0+4
 
 environment:
   sdk: ^3.10.7
@@ -34,6 +34,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/instituicoes.json
     - assets/cultivares.json
     - assets/colors_2026.json
     - assets/mg.geojson

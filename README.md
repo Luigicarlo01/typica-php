@@ -1,9 +1,95 @@
 # Typica PWA com backend PHP
 
 Projeto independente derivado do PWA Typica 0.1.0+9, identificado como
-`typica_pwa_php` e versão **0.2.0+1**. Os projetos anteriores não são modificados.
-O layout, tutoriais, instalação, filtros, PDF e recomendações por pixel continuam
+`typica_pwa_php` e versão **0.2.0+4**. Os projetos anteriores não são modificados.
+O layout, tutoriais, instalação, filtros e recomendações por pixel continuam
 no frontend Flutter Web. O backend deste projeto é executado em **PHP**.
+
+## Manual de uso
+
+O [manual ilustrado do Typica](docs/manual_typica.html) ensina instalação no
+Android/iPhone, preparação dos dados, escolha do ponto, consulta, filtros e uso
+offline, com nove capturas reais da versão 0.2.0+4.
+
+No GitHub, abra o arquivo e use **Download raw file** para baixá-lo. Depois, abra
+o HTML no navegador. Ele contém as próprias imagens e pode ser compartilhado
+como um único arquivo de aproximadamente 2,3 MB, sem pastas adicionais e sem
+internet para a leitura. Esse arquivo é documentação; a instalação do aplicativo
+continua sendo feita pelo endereço da hospedagem.
+
+## Histórico de versões
+
+Cada **commit** registra uma versão dos arquivos e permite comparar as mudanças.
+As **tags** dão nomes às versões publicadas:
+
+- [`v0.2.0+1`](https://github.com/Luigicarlo01/typica-php/tree/v0.2.0%2B1):
+  publicação anterior, preservada no commit inicial.
+- [`v0.2.0+4`](https://github.com/Luigicarlo01/typica-php/tree/v0.2.0%2B4):
+  filtros, disposição lado a lado, limpeza dos filtros e manual ilustrado.
+
+Consulte o [histórico de commits](https://github.com/Luigicarlo01/typica-php/commits/main/),
+a [comparação entre as duas versões](https://github.com/Luigicarlo01/typica-php/compare/v0.2.0%2B1...v0.2.0%2B4)
+e o [registro de mudanças](CHANGELOG.md).
+As alterações intermediárias 0.2.0+2 e 0.2.0+3 estão incluídas na publicação
+0.2.0+4; elas não tinham commits separados no repositório remoto.
+
+## Disposição dos filtros — versão 0.2.0+4
+
+Ciclo de maturação e Instituição ficam lado a lado, em duas colunas na mesma
+caixa. Os títulos e seletores são alinhados; os nomes de instituições podem
+ocupar duas linhas e o menu abre mais largo para exibir o texto completo.
+A disposição permanece em duas colunas nos celulares. A seleção, a limpeza
+conjunta e a ausência da exportação continuam com o comportamento anterior.
+
+## Limpar filtros e exportação — versão 0.2.0+3
+
+**Limpar filtros**, ao lado de Cultivares recomendadas, devolve ciclo,
+instituição, ferrugem e nematóide para **Todos** com um toque. O botão fica
+habilitado quando há algum filtro ativo, inclusive quando a lista está vazia.
+A limpeza mantém o ponto selecionado e a ordem original do ranking, funciona
+offline e não provoca novos downloads dos dados.
+
+A opção de exportar/compartilhar relatório foi retirada da interface por enquanto.
+O serviço `lib/services/pdf_report_service.dart` e as publicações anteriores
+permanecem guardados para eventual retomada. O download do banco para uso offline
+continua disponível, pois é necessário ao funcionamento do aplicativo.
+
+## Filtros de instituição e maturação — versão 0.2.0+2
+
+A análise oferece **Todos, Curto, Médio e Longo** no ciclo de maturação. O valor
+inicial é **Todos**. O filtro **Instituição** também começa em **Todos** e usa as
+associações da aba `Informação Cultivares` do arquivo `data_coffee_ciclo.xlsx`:
+Epamig, Fundação Procafé, IAC e IDR Paraná. `Não informada` preserva a ausência
+de associação no catálogo, sem deduzir uma instituição pelo nome da cultivar.
+
+Os filtros de ciclo, instituição, ferrugem e nematóide são combinados. A seleção
+percorre todo o ranking do pixel e mostra até cinco cultivares elegíveis na ordem
+original. **Todos** remove somente a restrição do respectivo filtro. A versão
+0.2.0+2 também registrava esses filtros no relatório PDF; a exportação está
+retirada da interface a partir de 0.2.0+3.
+
+A planilha contém 39 associações; os resultados científicos desta base incluem
+12 cultivares, vinculadas a Epamig ou IAC. Selecionar uma instituição que não tem
+resultados no ponto produz a mensagem de lista vazia, sem criar recomendações.
+`Bourbon Ama. IAC J10`, abreviado no ranking, é associado ao nome completo
+`Bourbon Amarelo IAC J10` do catálogo e da planilha.
+
+Somente as colunas Cultivar/Instituição foram extraídas para
+`assets/instituicoes.json`, pequeno catálogo necessário ao filtro e incluído no
+código. O arquivo Excel original e os bancos de recomendação não são alterados.
+Para atualizar essas associações:
+
+```bash
+python3 tools/importar_instituicoes.py /caminho/data_coffee_ciclo.xlsx
+python3 tools/compilar.py
+```
+
+O importador usa apenas a biblioteca padrão do Python e rejeita associações
+conflitantes. A origem, a aba e o SHA-256 do Excel ficam registrados no JSON.
+O catálogo acompanha o cache offline da interface; os lotes científicos mantêm
+os mesmos hashes e não precisam ser baixados novamente por causa destes filtros.
+O tutorial de análise mostra as duas novidades a quem já havia visto a versão
+anterior do roteiro.
 
 ## Construção
 
@@ -123,6 +209,7 @@ Com o servidor PHP em execução:
 
 ```bash
 python3 tools/testar_api.py
+NODE_PATH="$PWD/.runtime/browser/node_modules" PWA_TEST_URL=http://localhost:8081/ PWA_TEST_DIRECTORY=build/web node tools/testar_filtros.cjs
 NODE_PATH="$PWD/.runtime/browser/node_modules" node tools/testar_pwa.cjs
 NODE_PATH="$PWD/.runtime/browser/node_modules" PWA_TEST_VIEWPORTS=390x844 node tools/testar_tela_inicial.cjs
 NODE_PATH="$PWD/.runtime/browser/node_modules" node tools/testar_atualizacao.cjs
@@ -138,5 +225,5 @@ e comportamento em aparelhos físicos Android/iOS ainda precisam de teste local.
 
 O teste de API cobre versão, manifesto, integridade dos lotes, HEAD, métodos e
 entradas inválidas. O teste funcional cobre o download via PHP, ranking em dois
-pixels, filtros, PDF e reabertura offline. Os testes de pacotes e recuperação
+pixels, filtros, ausência da exportação e reabertura offline. Os testes de pacotes e recuperação
 herdados continuam disponíveis como verificações isoladas do armazenamento.

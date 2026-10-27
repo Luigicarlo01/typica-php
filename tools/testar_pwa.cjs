@@ -103,6 +103,9 @@ async function confirm(city = 'Viçosa') {
 }
 
 async function ranking(expected) {
+  await page.mouse.move(280, 450);
+  await page.mouse.wheel(0, 1800);
+  await page.waitForTimeout(200);
   await page.waitForFunction(names => {
     const text = document.body.innerText;
     return names.every(name => text.includes(name));
@@ -155,6 +158,10 @@ async function gps(latitude, longitude) {
 
   await search('Vicosa', 'Viçosa, Minas Gerais');
   await confirm();
+  await page.mouse.move(280, 450);
+  await page.mouse.wheel(0, -2500);
+  await page.getByRole('button', {name: /Filtrar por ciclo de maturação/}).click();
+  await page.getByRole('menuitem', {name: 'Médio', exact: true}).click();
   const names = ['MGS Epamig 1194', 'Topázio MG 1190', 'MGS Catiguá 3', 'Catiguá MG2', 'Catuaí Vermelho IAC 144'];
   await ranking(names);
   await page.screenshot({path: path.join(output, '02-analise-vicosa.png')});
@@ -171,24 +178,21 @@ async function gps(latitude, longitude) {
   await page.screenshot({path: path.join(output, '03-outro-pixel-vicosa.png')});
   mark('Outro pixel do mesmo município muda a ordem: Topázio em primeiro');
 
-  await page.getByText('Todos', {exact: true}).first().click();
+  await page.mouse.move(280, 450);
+  await page.mouse.wheel(0, -2500);
+  await page.getByRole('button', {name: /Filtrar por Ferrugem/}).click();
   await page.getByRole('menuitem', {name: 'Resistente', exact: true}).click();
   await ranking(['MGS Catiguá 3', 'Catiguá MG2', 'Pau Brasil MG1', 'Sarchimor MG 8840']);
   mark('Filtro de ferrugem preserva a ordem das alternativas do pixel');
 
-  await page.getByText('Todos', {exact: true}).first().click();
+  await page.getByRole('button', {name: /Filtrar por Nematóide/}).click();
   await page.getByRole('menuitem', {name: 'Resistente', exact: true}).click();
   await ranking(['MGS Catiguá 3']);
   assert(!(await page.locator('body').innerText()).includes('Topázio MG 1190'));
   mark('Filtro combinado de nematóide e ferrugem');
 
-  const pdfPromise = page.waitForEvent('download', {timeout: 30000});
-  await page.getByRole('button', {name: 'Compartilhar relatório', exact: true}).click();
-  const pdf = await pdfPromise;
-  const pdfPath = path.join(output, 'relatorio-vicosa.pdf');
-  await pdf.saveAs(pdfPath);
-  assert.equal(fs.readFileSync(pdfPath).subarray(0, 5).toString(), '%PDF-');
-  mark('Relatório PDF gerado e baixado pelo navegador');
+  assert.equal(await page.getByRole('button', {name: 'Compartilhar relatório', exact: true}).count(), 0);
+  mark('Opção de exportação/compartilhamento ausente da interface');
 
   await back();
   await search('Joao Pinheiro', 'João Pinheiro, Minas Gerais');
@@ -206,6 +210,10 @@ async function gps(latitude, longitude) {
   mark('Navegador fechado e reaberto offline, sem repetir download do banco');
   await search('Vicosa', 'Viçosa, Minas Gerais');
   await confirm();
+  await page.mouse.move(280, 450);
+  await page.mouse.wheel(0, -2500);
+  await page.getByRole('button', {name: /Filtrar por ciclo de maturação/}).click();
+  await page.getByRole('menuitem', {name: 'Médio', exact: true}).click();
   await ranking(names);
   await page.screenshot({path: path.join(output, '04-analise-offline.png')});
   mark('Pesquisa e recomendações funcionam após reabertura totalmente offline');

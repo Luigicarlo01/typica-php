@@ -1,19 +1,13 @@
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:printing/printing.dart';
 
 import '../controllers/analysis_controller.dart';
 
 import '../services/analysis_service.dart';
-import '../services/crop_cycle_service.dart';
 import '../services/onboarding_service.dart';
-import '../services/pdf_report_service.dart';
 
 import '../widgets/cycle_selection_picker.dart';
+import '../widgets/institution_filter_picker.dart';
 import '../widgets/genotype_plot.dart';
 import '../widgets/genotypes_list.dart';
 import '../widgets/onboarding_overlay.dart';
@@ -50,16 +44,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   bool _isMapFullscreen = false;
 
   // ============================================================
-  // COMPARTILHAMENTO
-  // ============================================================
-
-  bool _generatingPdf = false;
-
-  /// Utilizada para capturar apenas o mapa
-  /// que será inserido no relatório.
-  final GlobalKey _mapCaptureKey = GlobalKey();
-
-  // ============================================================
   // KEYS
   // ============================================================
 
@@ -72,6 +56,8 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   final GlobalKey _sliderKey = GlobalKey();
 
   final GlobalKey _cycleKey = GlobalKey();
+
+  final GlobalKey _institutionKey = GlobalKey();
 
   final GlobalKey _resistanceKey = GlobalKey();
 
@@ -144,178 +130,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
   }
 
   // ============================================================
-  // COMPARTILHAR PDF
-  // ============================================================
-
-  Future<void> _sharePdf() async {
-    if (_generatingPdf) {
-      return;
-    }
-
-    final ranking = _controller.selectedRanking;
-
-    // ==========================================================
-    // SEM CULTIVARES
-    // ==========================================================
-
-    if (ranking.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não existem cultivares para compartilhar.'),
-        ),
-      );
-
-      return;
-    }
-
-    // ==========================================================
-    // CARREGAMENTO
-    // ==========================================================
-
-    setState(() {
-      _generatingPdf = true;
-    });
-
-    try {
-      // ========================================================
-      // CAPTURAR MAPA
-      // ========================================================
-
-      final mapa = await _captureMap();
-
-      // ========================================================
-      // MUNICÍPIO
-      // ========================================================
-
-      final displayName = AnalysisService().displayName;
-
-      final municipioInterno = AnalysisService().municipio;
-
-      final municipio =
-          displayName ??
-          (municipioInterno != null
-              ? _toTitleCase(municipioInterno)
-              : 'Local selecionado');
-
-      // ========================================================
-      // GERAR PDF
-      // ========================================================
-
-      final bytes = await PdfReportService.generate(
-        municipio: municipio,
-
-        latitude: widget.selectedPoint.latitude,
-
-        longitude: widget.selectedPoint.longitude,
-
-        ciclo: CropCycleService().cycle.label,
-
-        filtroFerrugem: _controller.ferrugemFilter.label,
-
-        filtroNematoide: _controller.nematoideFilter.label,
-
-        cultivares: ranking,
-
-        mapa: mapa,
-      );
-
-      // ========================================================
-      // NOME DO ARQUIVO
-      // ========================================================
-
-      final nomeArquivo = 'relatorio_${_normalizarArquivo(municipio)}.pdf';
-
-      // ========================================================
-      // COMPARTILHAR
-      // ========================================================
-
-      await Printing.sharePdf(bytes: bytes, filename: nomeArquivo);
-    } catch (e) {
-      debugPrint('Erro ao compartilhar relatório: $e');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Não foi possível compartilhar o relatório.'),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _generatingPdf = false;
-        });
-      }
-    }
-  }
-
-  // ============================================================
-  // CAPTURAR MAPA
-  // ============================================================
-
-  Future<Uint8List?> _captureMap() async {
-    final estavaAberto = _showMap;
-
-    // ==========================================================
-    // MAPA FECHADO
-    // ==========================================================
-    //
-    // Abre temporariamente para ser renderizado.
-    // ==========================================================
-
-    if (!estavaAberto) {
-      setState(() {
-        _showMap = true;
-      });
-
-      await WidgetsBinding.instance.endOfFrame;
-
-      // Aguarda os tiles.
-      await Future<void>.delayed(const Duration(milliseconds: 1000));
-
-      await WidgetsBinding.instance.endOfFrame;
-    }
-
-    Uint8List? bytes;
-
-    try {
-      final captureContext = _mapCaptureKey.currentContext;
-
-      if (captureContext == null || !captureContext.mounted) {
-        return null;
-      }
-
-      final object = captureContext.findRenderObject();
-
-      if (object is! RenderRepaintBoundary) {
-        return null;
-      }
-
-      final image = await object.toImage(pixelRatio: 2.0);
-
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-
-      if (byteData != null) {
-        bytes = byteData.buffer.asUint8List();
-      }
-    } catch (e) {
-      debugPrint('Erro ao capturar mapa: $e');
-    } finally {
-      // ========================================================
-      // RESTAURAR MAPA
-      // ========================================================
-
-      if (!estavaAberto && mounted) {
-        setState(() {
-          _showMap = false;
-        });
-      }
-    }
-
-    return bytes;
-  }
-
-  // ============================================================
   // ONBOARDING
   // ============================================================
 
@@ -374,9 +188,20 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
         padding: 6,
 
+        introducedIn: 2,
         title: 'Ciclo de maturação',
 
-        description: 'Escolha o ciclo para filtrar as cultivares.',
+        description:
+            'Escolha o ciclo ou use Todos para considerar qualquer maturação.',
+      ),
+
+      OnboardingStep(
+        targetKey: _institutionKey,
+        padding: 6,
+        introducedIn: 2,
+        title: 'Instituição da cultivar',
+        description:
+            'Filtre pela instituição responsável ou use Todos para considerar qualquer instituição.',
       ),
 
       OnboardingStep(
@@ -718,8 +543,6 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
 
                       Positioned.fill(
                         child: RepaintBoundary(
-                          key: _mapCaptureKey,
-
                           child: GenotypePlot(
                             key: _mapKey,
 
@@ -793,12 +616,48 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               ],
 
               // =================================================
-              // CICLO
+              // CICLO E INSTITUIÇÃO
               // =================================================
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-
-                child: CycleSelectionPicker(key: _cycleKey),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.08),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.035),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: CycleSelectionPicker(
+                          key: _cycleKey,
+                          compact: true,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: InstitutionFilterPicker(
+                          key: _institutionKey,
+                          compact: true,
+                          value: _controller.institutionFilter,
+                          institutions: _controller.institutions,
+                          onChanged: _controller.setInstitutionFilter,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
               // =================================================
@@ -821,7 +680,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
               ),
 
               // =================================================
-              // CULTIVARES + COMPARTILHAR
+              // CULTIVARES E FILTROS
               // =================================================
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 18, 8, 3),
@@ -841,25 +700,17 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                       ),
                     ),
 
-                    // ===========================================
-                    // COMPARTILHAR RELATÓRIO
-                    // ===========================================
-                    IconButton(
-                      tooltip: 'Compartilhar relatório',
-
-                      onPressed: ranking.isEmpty || _generatingPdf
-                          ? null
-                          : _sharePdf,
-
-                      icon: _generatingPdf
-                          ? const SizedBox(
-                              width: 20,
-
-                              height: 20,
-
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.share_outlined, size: 23),
+                    const SizedBox(width: 8),
+                    TextButton.icon(
+                      onPressed: _controller.hasActiveFilters
+                          ? _controller.clearFilters
+                          : null,
+                      icon: const Icon(Icons.filter_alt_off_outlined, size: 18),
+                      label: const Text('Limpar filtros'),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
                     ),
                   ],
                 ),
@@ -925,7 +776,7 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                       const SizedBox(height: 4),
 
                       Text(
-                        'Tente alterar o ciclo, a ferrugem '
+                        'Tente alterar o ciclo, a instituição, a ferrugem '
                         'ou o nematóide.',
 
                         textAlign: TextAlign.center,
@@ -964,41 +815,5 @@ class _AnalysisScreenState extends State<AnalysisScreen> {
                     '${word.substring(1).toLowerCase()}',
         )
         .join(' ');
-  }
-
-  // ============================================================
-  // NOME DO ARQUIVO PDF
-  // ============================================================
-
-  String _normalizarArquivo(String text) {
-    var value = text.toLowerCase().trim();
-
-    const substituicoes = <String, String>{
-      'á': 'a',
-      'à': 'a',
-      'ã': 'a',
-      'â': 'a',
-
-      'é': 'e',
-      'ê': 'e',
-
-      'í': 'i',
-
-      'ó': 'o',
-      'õ': 'o',
-      'ô': 'o',
-
-      'ú': 'u',
-
-      'ç': 'c',
-    };
-
-    substituicoes.forEach((de, para) {
-      value = value.replaceAll(de, para);
-    });
-
-    value = value.replaceAll(RegExp(r'[^a-z0-9]+'), '_');
-
-    return value.replaceAll(RegExp(r'^_+|_+$'), '');
   }
 }

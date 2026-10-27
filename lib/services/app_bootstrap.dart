@@ -1,5 +1,6 @@
 import 'mg_shape_service.dart';
 import 'cultivar_info_service.dart';
+import 'institution_service.dart';
 import 'app_mode.dart';
 import 'cultivar_database.dart';
 import 'pwa_platform.dart';
@@ -8,6 +9,7 @@ Future<void> bootstrapApp() async {
   await CultivarDatabase.instance.ready();
   await MgShapeService().load();
   await CultivarInfoService().load();
+  await InstitutionService().load();
   await AppMode().init();
   if (!await PwaPlatform.offlineShellReady()) {
     throw StateError(

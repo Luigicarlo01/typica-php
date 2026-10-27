@@ -246,7 +246,11 @@ class CultivarInfoService {
 
     value = value.replaceAll(RegExp(r'[^a-z0-9]+'), ' ');
 
-    return value.trim();
+    final normalized = value.trim();
+    // O ranking usa a abreviação; a planilha e o catálogo usam o nome completo.
+    return normalized == 'bourbon ama iac j10'
+        ? 'bourbon amarelo iac j10'
+        : normalized;
   }
 
   // ============================================================

@@ -29,6 +29,7 @@ key.properties
 # Dados privados. Logotipos e fontes licenciadas acompanham o código.
 /private_assets/
 /assets/*
+!/assets/instituicoes.json
 !/assets/*.svg
 !/assets/*.png
 !/assets/fonts/

@@ -1,4 +1,3 @@
-
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -27,6 +26,7 @@ class PdfReportService {
     required String filtroFerrugem,
     required String filtroNematoide,
     required List<RecommendedCultivar> cultivares,
+    String filtroInstituicao = 'Todos',
     Uint8List? mapa,
   }) async {
     final pdf = pw.Document();
@@ -264,6 +264,8 @@ class PdfReportService {
 
               children: [
                 _filtro('Ciclo', ciclo),
+
+                _filtro('Instituição', filtroInstituicao),
 
                 _filtro('Ferrugem', filtroFerrugem),
 

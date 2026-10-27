@@ -28,7 +28,7 @@ import 'pwa_platform.dart';
 /// São as duas linhas que fazem o recurso se anunciar sozinho.
 enum OnboardingFlow {
   map('done', 1),
-  analysis('analysis', 1);
+  analysis('analysis', 2);
 
   const OnboardingFlow(this.id, this.version);
 
