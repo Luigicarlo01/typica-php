@@ -13,7 +13,7 @@ commits separados.
 - Botão Limpar filtros para restaurar os quatro campos sem mudar o ponto.
 - Retirada da opção de exportar/compartilhar relatório da interface.
 - Orientações do tutorial de análise atualizadas para os novos filtros.
-- [Manual HTML ilustrado](docs/manual_typica.html), em um único arquivo,
+- [Manual HTML ilustrado](manual_typica.html), em um único arquivo,
   com nove capturas reais, navegação por etapas e ampliação das imagens.
 - Ferramentas de importação e verificação dos filtros, com documentação
   dos testes de funcionamento, layout e uso offline em VERIFICACAO.md.

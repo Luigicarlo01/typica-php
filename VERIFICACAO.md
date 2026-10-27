@@ -1,6 +1,6 @@
 # Manual ilustrado — versão 0.2.0+4
 
-- Nove capturas reais do aplicativo incluídas em docs/manual_typica.html.
+- Nove capturas reais do aplicativo incluídas em manual_typica.html.
 - HTML único, com logotipo e imagens incorporados, sem recursos externos
   necessários à leitura e sem alteração do código do aplicativo.
 - Revisão visual e teste no Chrome em larguras de 1440, 390 e 320 px.

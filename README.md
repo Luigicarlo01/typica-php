@@ -7,7 +7,7 @@ no frontend Flutter Web. O backend deste projeto é executado em **PHP**.
 
 ## Manual de uso
 
-O [manual ilustrado do Typica](docs/manual_typica.html) ensina instalação no
+O [manual ilustrado do Typica](manual_typica.html) ensina instalação no
 Android/iPhone, preparação dos dados, escolha do ponto, consulta, filtros e uso
 offline, com nove capturas reais da versão 0.2.0+4.
 
